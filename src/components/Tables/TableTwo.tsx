@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Product } from '../../types/product';
 import { useAppDispatch } from '../../app/store';
 import { deleteProduct, fetchProducts, updateProduct } from '../../app/slices/productSlice';
+import { useNavigate } from 'react-router-dom';
 
 const TableTwo = () => {
   const dispatch = useAppDispatch();
@@ -10,7 +11,7 @@ const TableTwo = () => {
   const [alertMessage, setAlertMessage] = useState('');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // State for edit modal visibility
   const [editProduct, setEditProduct] = useState<Product | null>(null); // State for the product being edited
-
+  const navigate = useNavigate();
   useEffect(() => {
     dispatch(fetchProducts()).then((result) => {
       if (result.payload) {
@@ -60,6 +61,25 @@ const TableTwo = () => {
       setEditProduct({ ...editProduct, [e.target.name]: e.target.value });
     }
   };
+ // Function to dynamically adjust font size based on the title height
+ const adjustFontSize = (titleElement: HTMLHeadingElement | null) => {
+  if (titleElement) {
+    let fontSize = 20; // Initial font size
+    titleElement.style.fontSize = `${fontSize}px`;
+    while (titleElement.scrollHeight > titleElement.clientHeight && fontSize > 14) {
+      fontSize -= 1;
+      titleElement.style.fontSize = `${fontSize}px`;
+    }
+  }
+};
+
+// Using useRef to reference each title element
+const titleRefs = useRef<(HTMLHeadingElement | null)[]>([]);
+
+// Run the font size adjustment whenever the component updates
+useEffect(() => {
+  titleRefs.current.forEach((titleElement) => adjustFontSize(titleElement));
+}, [productData]);
 
   return (
     <div className="relative">
@@ -112,28 +132,39 @@ const TableTwo = () => {
           </div>
         </div>
       )}
-      <div className="py-6 px-4 md:px-6 xl:px-7.5">
-        <h4 className="text-xl font-semibold text-black dark:text-white">Top Products</h4>
+        <div className="py-6 px-4 md:px-6 xl:px-7.5">
+        <h4 className="text-xl font-semibold text-black dark:text-white">Products List</h4>
       </div>
-  
+
       <div className="grid grid-cols-1 gap-6 p-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {productData.map((product, key) => (
           <div
             key={key}
             className="rounded-lg border border-stroke bg-white shadow-lg dark:border-strokedark dark:bg-boxdark p-4 flex flex-col"
+            style={{ height: '400px' }}
           >
             <div className="flex flex-col items-center flex-grow">
               <div className="h-40 w-40 rounded-md overflow-hidden">
                 <img src={product.image} alt="Product" className="object-cover w-full h-full" />
               </div>
-              <h5 className="mt-4 text-lg font-medium text-black dark:text-white">
+              <h5
+                ref={(el) => (titleRefs.current[key] = el)}
+                className="mt-4 text-lg font-medium text-black dark:text-white break-words text-center line-clamp-3"
+                style={{ maxHeight: '4.5em', overflow: 'hidden' }} // Limit to 3 lines
+              >
                 {product.title}
               </h5>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 overflow-hidden line-clamp-3">
                 {product.description}
               </p>
             </div>
-            <div className="flex justify-center mt-4 space-x-3">
+            <div className="mt-auto flex justify-center space-x-3">
+            <button
+              className="text-blue-500 hover:text-blue-700"
+              onClick={() => navigate(`/products/${product.id}`)} // Redirect with ID
+            >
+              Read More
+            </button>
               <button
                 className="text-gray-600 hover:text-primary"
                 onClick={() => handleEdit(product)}

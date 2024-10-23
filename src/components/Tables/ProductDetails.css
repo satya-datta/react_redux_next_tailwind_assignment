@@ -1,0 +1,20 @@
+/* src/components/ProductDetails.css */
+
+.product-details {
+    text-align: left; /* Center align text */
+    margin: 20px; /* Add some margin for spacing */
+  }
+  
+  .product-info {
+ /* Center the product info container */
+    max-width: 600px; /* Set a max width for the info container */
+  }
+  
+  .product-image {
+    height: 300px; /* Set image height */
+    object-fit: cover; /* Maintain aspect ratio */
+    align-items: center;
+    left: 200px;
+    margin: 20px 0; /* Add margin above and below the image */
+  }
+  

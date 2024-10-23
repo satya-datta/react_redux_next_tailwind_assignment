@@ -23,6 +23,16 @@ export const updateProduct = createAsyncThunk(
   }
 );
 
+export const fetchProductById = createAsyncThunk(
+  'products/fetchById',
+  async (id: number) => {
+    const response = await fetch(`/api/products/${id}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch product');
+    }
+    return response.json(); // Assuming your API returns JSON data
+  }
+);
 
 export const deleteProduct = createAsyncThunk('products/delete', async (id :string) => {
   await axios.delete(`https://fakestoreapi.com/products/${id}`);
@@ -58,7 +68,22 @@ const productSlice = createSlice({
         state.status = 'failed';
         state.error=true
       })
-
+      //cfvhjkl.
+      .addCase(fetchProductById.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchProductById.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        const fetchedProduct = action.payload;
+        const existingProduct = state.items.find((product) => product.id === fetchedProduct.id);
+        if (!existingProduct) {
+          state.items.push(fetchedProduct);
+        }
+      })
+      .addCase(fetchProductById.rejected, (state) => {
+        state.status = 'failed';
+        state.error = true;
+      })
       // Handle addProduct
       .addCase(addProduct.pending, (state) => {
         state.status = 'loading';
@@ -72,22 +97,22 @@ const productSlice = createSlice({
       })
 
       // // Handle updateProduct
-      // .addCase(updateProduct.pending, (state) => {
-      //   state.status = 'loading';
-      // })
-      // .addCase(updateProduct.fulfilled, (state, action) => {
-      //   state.status = 'succeeded';
-      //   const index = state.items.findIndex(product => product.id === action.payload.id);
-      //   if (index !== -1) {
-      //     state.items[index] = action.payload;
-      //   }
-      // })
-      // .addCase(updateProduct.rejected, (state) => {
-      //   state.status = 'failed';
-      // })
+      .addCase(updateProduct.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(updateProduct.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        const index = state.items.findIndex(product => product.id === action.payload.id);
+        if (index !== -1) {
+          state.items[index] = action.payload;
+        }
+      })
+      .addCase(updateProduct.rejected, (state) => {
+        state.status = 'failed'; 
+      })
 
       // Handle deleteProduct
-      .addCase(deleteProduct.pending, (state) => {
+      .addCase(deleteProduct.pending, (state) => { 
         state.status = 'loading';
       })
       .addCase(deleteProduct.fulfilled, (state, action) => {
